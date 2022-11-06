@@ -1,0 +1,12 @@
+
+initial setup:
+    docker compose up --build
+
+login to docker
+    docker exec -it api /bin/sh
+
+Setup dev mongo db 
+    php artisan migrate
+
+Note:
+    Usually lumen-app/.env is not added to the git repo. I added it here to make it a full working example.

@@ -106,6 +106,10 @@ $app->configure('app');
 |
 */
 
+$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
+
+$app->withEloquent();
+
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
 ], function ($router) {
