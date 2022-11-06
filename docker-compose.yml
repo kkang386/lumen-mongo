@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mongo:
     image: mongo
-    hostname: mongo.testnet.net
+    hostname: mongo.devlumen.net
     container_name: mongodb
     restart: always
     environment:
@@ -15,7 +15,7 @@ services:
 
   mongo-express:
     image: mongo-express
-    hostname: mongo-express.testnet.net
+    hostname: mongo-express.devlumen.net
     container_name: mongo-express
     restart: always
     ports:
@@ -30,7 +30,7 @@ services:
   api:
     depends_on:
     - mongo 
-    hostname: api.testnet.net
+    hostname: api.devlumen.net
     container_name: api 
     build:
       context: .
@@ -41,8 +41,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - /var/www/html:/var/www/html/demo
-      - ./lumen-app/public:/var/www/html/public
+      - ./lumen-app/:/var/www/html/
       - $PWD/system/php.ini:/usr/local/etc/php/php.ini
       #- $PWD/logs:/var/log/apache2
       - /var/www/html/vendor/
