@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    hostname: mongo.testnet.net
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      test_net:
+        ipv4_address: 192.168.4.12
+
+  mongo-express:
+    image: mongo-express
+    hostname: mongo-express.testnet.net
+    container_name: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+    networks:
+      test_net:
+        ipv4_address: 192.168.4.11
+
+  api:
+    depends_on:
+    - mongo 
+    hostname: api.testnet.net
+    container_name: api 
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    networks:
+      test_net:
+        ipv4_address: 192.168.4.10
+    ports:
+      - 8000:8000
+    volumes:
+      - /var/www/html:/var/www/html/demo
+      - ./lumen-app/public:/var/www/html/public
+      - $PWD/system/php.ini:/usr/local/etc/php/php.ini
+      #- $PWD/logs:/var/log/apache2
+      - /var/www/html/vendor/
+    restart: always
+
+networks:
+  test_net:
+    name: test_net
+    external: false
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.4.0/24
+          gateway: 192.168.4.1
