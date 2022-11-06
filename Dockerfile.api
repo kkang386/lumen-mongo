@@ -1,14 +1,14 @@
-FROM php:7.3-fpm-alpine
+FROM php:8.0.5-fpm-alpine
 
 WORKDIR /var/www/html/
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer
 
-COPY ./lumen-app .
-
+COPY ./lumen-app/composer.json /var/www/html
+COPY ./lumen-app/tests /var/www/html/tests
 RUN composer install
 
-RUN rm -rf /var/cache/apk/*
+#RUN rm -rf /var/cache/apk/*
 RUN apk update \
     && apk add --no-cache libmcrypt \
     php7-pecl-mcrypt \
@@ -19,17 +19,13 @@ RUN apk update \
     gcc \
     autoconf \
     make \
-    build-base
+    build-base \
+    openssl-dev
 
-##RUN docker-php-ext-install mysqli pdo pdo_mysql 
-##RUN pecl install redis 
 RUN pecl install mongodb
-
-##RUN docker-php-ext-enable mysqli 
 RUN docker-php-ext-enable mongodb
-##RUN docker-php-ext-configure gd --with-freetype --with-jpeg 
-##RUN docker-php-ext-install mbstring zip gd
-##RUN apt-get install unzip
+
+RUN composer require jenssegers/mongodb:3.8.0 --with-all-dependencies
 
 ENTRYPOINT ["php"]
 CMD ["-S", "0.0.0.0:8000", "-t", "/var/www/html/public/"]
