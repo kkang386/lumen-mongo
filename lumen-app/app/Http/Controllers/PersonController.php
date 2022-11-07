@@ -21,15 +21,16 @@ class PersonController extends Controller
     public function store(Request $request): JsonResponse {
         
         Log::info("post request: ", [$request]);
-        
-        $UTC = new \DateTimeZone("UTC");
+        $errors = [];
+        //$UTC = new \DateTimeZone("UTC");
         $newTZ = new \DateTimeZone($request->timezone);
-        $date = new \DateTime($request->birth_date, $UTC );
-        $date->setTimezone( $newTZ );
+        $date = new \DateTime($request->birth_date, $newTZ );
+        //$date->setTimezone( $newTZ );
         
         $person = new Person();
         $person->name = $request->name;
         $person->birth_date = new \MongoDB\BSON\UTCDateTime($date->getTimestamp()*1000);
+        $person->timezone = $request->timezone;
 
         $person->save();
         return response()->json(["result" => "ok"], 201);
