@@ -16,3 +16,6 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+
+$router->get('/person', ["uses" => "PersonController@show"]);
+$router->post('/person', ["uses" => "PersonController@store"]);

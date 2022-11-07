@@ -26,6 +26,7 @@ RUN pecl install mongodb
 RUN docker-php-ext-enable mongodb
 
 RUN composer require jenssegers/mongodb:3.8.0 --with-all-dependencies
+RUN composer require flipbox/lumen-generator
 
 ENTRYPOINT ["php"]
 CMD ["-S", "0.0.0.0:8000", "-t", "/var/www/html/public/"]

@@ -94,6 +94,10 @@ $app->configure('app');
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
+$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
+$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+$app->withFacades();
+$app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
@@ -106,9 +110,6 @@ $app->configure('app');
 |
 */
 
-$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
-
-$app->withEloquent();
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
