@@ -17,7 +17,7 @@ class Person extends Model
      */
     protected $fillable = [
         'name', 
-        'birth_date',
+        'birthdate',
         'timezone'
     ];    
 }

@@ -16,7 +16,8 @@ class CreatePersonTable extends Migration
         Schema::create('person', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->dateTime('birth_date', 6);
+            // $table->dateTime('birthdate', 6);
+            $table->string('birthdate');
             $table->string('timezone');
             $table->timestamps();
         });
