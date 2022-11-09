@@ -54,6 +54,7 @@ class PersonController extends Controller
     }
     
     public function createMessage(Array $rec, \DateTime $birthdate): String {
+        $this->currentDate->setTimezone($birthdate->getTimezone());
         $age = intval($this->currentDate->format('Y')) - intval($birthdate->format('Y'));
         $message = '';
         if ($rec['isBirthday']) {
