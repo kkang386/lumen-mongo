@@ -1,20 +1,18 @@
 
-initial setup:
+Initial setup:
     docker compose up --build
 
-login to docker
-    docker exec -it api /bin/sh
+Login to docker
+    docker exec -it lm-api /bin/sh
 
 Setup dev mongo db 
     php artisan migrate
 
 Run unittests
-    login to docker and run this command
+  Login to docker and run this command
     ./vendor/bin/phpunit
 
 Note:
-    Usually lumen-app/.env is not added to the git repo. I added it here to make it a full working example.
-
 
 Test Run instructions:
 
