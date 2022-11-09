@@ -46,7 +46,6 @@ class PersonController extends Controller
     }
     
     public function show(): JsonResponse {
-        // $people = Person::all();
         $people = Person::query()->get();
 
         $records = [];
@@ -57,10 +56,10 @@ class PersonController extends Controller
             $rec['timezone'] = $person->timezone;
 
             $birthdate = new \DateTime($person->birthdate, new \DateTimeZone($person->timezone));
-            $this->currentDate->setTimezone($birthdate->getTimezone());
+            //$this->currentDate->setTimezone($birthdate->getTimezone());
             $nextBirthday = $this->nextBirthdate($birthdate);
-            $rec['nextbday'] = $nextBirthday->format("Y-m-d H:s:i e");
-            $rec['currentDate'] = $this->currentDate->format("Y-m-d H:s:i e");
+            //$rec['nextbday'] = $nextBirthday->format("Y-m-d H:s:i e");
+            //$rec['currentDate'] = $this->currentDate->format("Y-m-d H:s:i e");
             $interval = $this->currentDate->diff($nextBirthday);
             $rec['interval'] = [
                 'y' => intval($interval->y),
@@ -88,7 +87,6 @@ class PersonController extends Controller
                 } else {
                     $rec['message'] = sprintf("%s is %d years old in %d months, %d days in %s.",
                         $rec['name'], $age + 1, $rec['interval']['m'], $rec['interval']['d'], $rec['timezone'] );
-
                 }
             }
             $records[] = $rec;
@@ -98,7 +96,6 @@ class PersonController extends Controller
 
     public function store(Request $request): JsonResponse {
         
-        Log::error("post request: ", [$request]);
         $validator = Validator::make($request->all(),
             [
                 'name' => 'required|max:255|name_string',
@@ -124,6 +121,6 @@ class PersonController extends Controller
         $person->timezone = $request->timezone;
 
         $person->save();
-        return response()->json(["result" => "ok"], 201);
+        return response()->json(["created" => true], 201);
     }
 }
