@@ -8,5 +8,24 @@ login to docker
 Setup dev mongo db 
     php artisan migrate
 
+Run unittests
+    login to docker and run this command
+    ./vendor/bin/phpunit
+
 Note:
     Usually lumen-app/.env is not added to the git repo. I added it here to make it a full working example.
+
+
+Test Run instructions:
+
+curl --location --request POST 'http://localhost:8000/person' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "name" : "John Will",
+  "birthdate" : "2021-11-08 03:31:00",
+  "timezone": "America/Los_Angeles"
+}'
+
+
+curl --location --request GET 'http://localhost:8000/person' 
+

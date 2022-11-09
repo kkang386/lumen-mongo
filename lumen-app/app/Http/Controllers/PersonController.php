@@ -18,7 +18,7 @@ class PersonController extends Controller
         $this->currentDate = isset($args['currentDate'])? $args['currentDate'] : new \DateTime();
     }
 
-    public function isBirthdate(\DateTime $birthdate) {
+    public function isBirthdate(\DateTime $birthdate): bool {
         $this->currentDate->setTimezone($birthdate->getTimezone());
         return ($birthdate->format('m-d') == $this->currentDate->format('m-d'));
     }
@@ -30,21 +30,50 @@ class PersonController extends Controller
         $year = intval($this->currentDate->format("Y"));
         $birthMonth = intval($birthdate->format("m"));
         $birthDay = intval($birthdate->format("d"));
+
+        // assume coming birth day is in the current year, create that datetime
         $nextBirthDayStr = sprintf("%d-%d-%d 00:00:00", $year, $birthMonth, $birthDay);
         $newBirthDay = new \DateTime($nextBirthDayStr, $birthdate->getTimezone());
+
+        // if in the same timezone, the current month and day is the birth month and day
+        // return the created birthdate
+        // or if created(assumed) coming birth day is in future
+        // return the created birthdate
         if (($todayMonth == $birthMonth &&
              $todayDay == $birthDay) ||
             ($newBirthDay > $this->currentDate)) {
             return $newBirthDay;
         }
 
-        // add a year
+        // The person's birth day of this year is already passed.
+        // Add a year, and create new time string.
         $year += 1;
         $nextBirthDayStr = sprintf("%d-%d-%d 00:00:00", $year, $birthMonth, $birthDay);
         $newBirthDay = new \DateTime($nextBirthDayStr, $birthdate->getTimezone());
         return $newBirthDay;
     }
     
+    public function createMessage(Array $rec, \DateTime $birthdate): String {
+        $age = intval($this->currentDate->format('Y')) - intval($birthdate->format('Y'));
+        $message = '';
+        if ($rec['isBirthday']) {
+            $hoursRemaining = 24 - intval($this->currentDate->format('H'));
+            $message = sprintf("%s is %d years old today (%d hours remaining in %s).",
+                $rec['name'], $age, $hoursRemaining, $rec['timezone'] );
+        } else {
+            if ($rec['interval']['y'] == 0 && 
+                $rec['interval']['m'] == 0 &&
+                $rec['interval']['d'] == 0) {
+                    $message = sprintf("%s is %d years old in %d hours %d minutes.",
+                    $rec['name'], $age + 1, $rec['interval']['h'], $rec['interval']['i'], $rec['timezone'] );
+            } else {
+                $message = sprintf("%s is %d years old in %d months, %d days in %s.",
+                    $rec['name'], $age + 1, $rec['interval']['m'], $rec['interval']['d'], $rec['timezone'] );
+            }
+        }
+        return $message;
+    }
+
     public function show(): JsonResponse {
         $people = Person::query()->get();
 
@@ -56,10 +85,7 @@ class PersonController extends Controller
             $rec['timezone'] = $person->timezone;
 
             $birthdate = new \DateTime($person->birthdate, new \DateTimeZone($person->timezone));
-            //$this->currentDate->setTimezone($birthdate->getTimezone());
             $nextBirthday = $this->nextBirthdate($birthdate);
-            //$rec['nextbday'] = $nextBirthday->format("Y-m-d H:s:i e");
-            //$rec['currentDate'] = $this->currentDate->format("Y-m-d H:s:i e");
             $interval = $this->currentDate->diff($nextBirthday);
             $rec['interval'] = [
                 'y' => intval($interval->y),
@@ -70,25 +96,8 @@ class PersonController extends Controller
                 's' => intval($interval->s),
                 '_comment' => sprintf("f: %f", $interval->f)
             ];
-            // check if today is the bday
-            $age = intval($this->currentDate->format('Y')) - intval($birthdate->format('Y'));
-            if ($this->isBirthdate($birthdate)) {
-                $rec['isBirthday'] = true;
-                $hoursRemaining = 24 - intval($this->currentDate->format('H'));
-                $rec['message'] = sprintf("%s is %d years old today (%d hours remaining in %s).",
-                    $rec['name'], $age, $hoursRemaining, $rec['timezone'] );
-            } else {
-                $rec['isBirthday'] = false;
-                if ($rec['interval']['y'] == 0 && 
-                    $rec['interval']['m'] == 0 &&
-                    $rec['interval']['d'] == 0) {
-                        $rec['message'] = sprintf("%s is %d years old in %d hours %d minutes.",
-                        $rec['name'], $age + 1, $rec['interval']['h'], $rec['interval']['i'], $rec['timezone'] );
-                } else {
-                    $rec['message'] = sprintf("%s is %d years old in %d months, %d days in %s.",
-                        $rec['name'], $age + 1, $rec['interval']['m'], $rec['interval']['d'], $rec['timezone'] );
-                }
-            }
+            $rec['isBirthday'] = $this->isBirthdate($birthdate);
+            $rec['message'] = $this->createMessage($rec, $birthdate);
             $records[] = $rec;
         }
         return response()->json($records);
@@ -103,7 +112,7 @@ class PersonController extends Controller
                 'timezone' => 'required|timezone_string'
             ],
             [
-                'name.name_string' => "Name may only contain letters",
+                'name.name_string' => "Name may only contain letters and spaces.",
                 'birthdate.datetime_string' => "Invalid birth date format. Please use this format: 'YYYY-MM-DD HH:MM:SS'",
                 'timezone.timezone_string' => "Invalid timezone."
             ]
