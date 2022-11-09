@@ -11,16 +11,43 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Log;
 
 class PersonController extends Controller
-{
-    private function nextBirthdateInSeconds(\DateTime $birthDate): int {
+{   
+    public \DateTime $currentDate;
 
+    public function __construct($args = []) {
+        $this->currentDate = isset($args['currentDate'])? $args['currentDate'] : new \DateTime();
+    }
+
+    public function isBirthdate(\DateTime $birthdate) {
+        $this->currentDate->setTimezone($birthdate->getTimezone());
+        return ($birthdate->format('m-d') == $this->currentDate->format('m-d'));
+    }
+    
+    public function nextBirthdate(\DateTime $birthdate): \DateTime {
+        $this->currentDate->setTimezone($birthdate->getTimezone());
+        $todayMonth = intval($this->currentDate->format("m"));
+        $todayDay = intval($this->currentDate->format("d"));
+        $year = intval($this->currentDate->format("Y"));
+        $birthMonth = intval($birthdate->format("m"));
+        $birthDay = intval($birthdate->format("d"));
+        $nextBirthDayStr = sprintf("%d-%d-%d 00:00:00", $year, $birthMonth, $birthDay);
+        $newBirthDay = new \DateTime($nextBirthDayStr, $birthdate->getTimezone());
+        if (($todayMonth == $birthMonth &&
+             $todayDay == $birthDay) ||
+            ($newBirthDay > $this->currentDate)) {
+            return $newBirthDay;
+        }
+
+        // add a year
+        $year += 1;
+        $nextBirthDayStr = sprintf("%d-%d-%d 00:00:00", $year, $birthMonth, $birthDay);
+        $newBirthDay = new \DateTime($nextBirthDayStr, $birthdate->getTimezone());
+        return $newBirthDay;
     }
     
     public function show(): JsonResponse {
         // $people = Person::all();
-        $currentDate = new \DateTime();
-        $people = Person::query()
-                    ->get();
+        $people = Person::query()->get();
 
         $records = [];
         foreach ($people as $person) {
@@ -30,9 +57,40 @@ class PersonController extends Controller
             $rec['timezone'] = $person->timezone;
 
             $birthdate = new \DateTime($person->birthdate, new \DateTimeZone($person->timezone));
-            $currentDate->setTimezone(new \DateTimeZone($person->timezone));
+            $this->currentDate->setTimezone($birthdate->getTimezone());
+            $nextBirthday = $this->nextBirthdate($birthdate);
+            $rec['nextbday'] = $nextBirthday->format("Y-m-d H:s:i e");
+            $rec['currentDate'] = $this->currentDate->format("Y-m-d H:s:i e");
+            $interval = $this->currentDate->diff($nextBirthday);
+            $rec['interval'] = [
+                'y' => intval($interval->y),
+                'm' => intval($interval->m),
+                'd' => intval($interval->d),
+                'h' => intval($interval->h),
+                'i' => intval($interval->i),
+                's' => intval($interval->s),
+                '_comment' => sprintf("f: %f", $interval->f)
+            ];
             // check if today is the bday
-            $rec['isBirthday'] = ($birthdate->format('m-d') == $currentDate->format('m-d'));
+            $age = intval($this->currentDate->format('Y')) - intval($birthdate->format('Y'));
+            if ($this->isBirthdate($birthdate)) {
+                $rec['isBirthday'] = true;
+                $hoursRemaining = 24 - intval($this->currentDate->format('H'));
+                $rec['message'] = sprintf("%s is %d years old today (%d hours remaining in %s).",
+                    $rec['name'], $age, $hoursRemaining, $rec['timezone'] );
+            } else {
+                $rec['isBirthday'] = false;
+                if ($rec['interval']['y'] == 0 && 
+                    $rec['interval']['m'] == 0 &&
+                    $rec['interval']['d'] == 0) {
+                        $rec['message'] = sprintf("%s is %d years old in %d hours %d minutes.",
+                        $rec['name'], $age + 1, $rec['interval']['h'], $rec['interval']['i'], $rec['timezone'] );
+                } else {
+                    $rec['message'] = sprintf("%s is %d years old in %d months, %d days in %s.",
+                        $rec['name'], $age + 1, $rec['interval']['m'], $rec['interval']['d'], $rec['timezone'] );
+
+                }
+            }
             $records[] = $rec;
         }
         return response()->json($records);
