@@ -1,9 +1,17 @@
 <?php
-
 require_once __DIR__.'/../vendor/autoload.php';
 
+// load the app env file depending on the APP_ENV environment variable.
+$env = env('APP_ENV');
+$envFile = '.env.'.$env;
+// If the specific environment file doesn't exist, null out the $file variable.
+if (!file_exists(dirname(__DIR__).'/'.$envFile)) {
+    $envFile = null;
+}
+
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
-    dirname(__DIR__)
+    dirname(__DIR__),
+    $envFile
 ))->bootstrap();
 
 date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
