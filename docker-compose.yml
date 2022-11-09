@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  mongo:
+  lm-mongo:
     image: mongo
     hostname: mongo.devlumen.net
     container_name: mongodb
@@ -13,7 +13,7 @@ services:
       test_net:
         ipv4_address: 192.168.4.12
 
-  mongo-express:
+  lm-mongo-express:
     image: mongo-express
     hostname: mongo-express.devlumen.net
     container_name: mongo-express
@@ -27,7 +27,7 @@ services:
       test_net:
         ipv4_address: 192.168.4.11
 
-  api:
+  lm-api:
     depends_on:
     - mongo 
     hostname: api.devlumen.net
