@@ -75,31 +75,35 @@ class PersonController extends Controller
         return $message;
     }
 
+    public function birthdateRecord(Person $person): Array {
+        $rec = [];
+        $rec['name'] = $person->name;
+        $rec['birthdate'] = $person->birthdate;
+        $rec['timezone'] = $person->timezone;
+
+        $birthdate = new \DateTime($person->birthdate, new \DateTimeZone($person->timezone));
+        $nextBirthday = $this->nextBirthdate($birthdate);
+        $interval = $this->currentDate->diff($nextBirthday);
+        $rec['interval'] = [
+            'y' => intval($interval->y),
+            'm' => intval($interval->m),
+            'd' => intval($interval->d),
+            'h' => intval($interval->h),
+            'i' => intval($interval->i),
+            's' => intval($interval->s),
+            '_comment' => sprintf("f: %f", $interval->f)
+        ];
+        $rec['isBirthday'] = $this->isBirthdate($birthdate);
+        $rec['message'] = $this->createMessage($rec, $birthdate);
+        return $rec;
+    }
+
     public function show(): JsonResponse {
         $people = Person::query()->get();
 
         $records = [];
         foreach ($people as $person) {
-            $rec = [];
-            $rec['name'] = $person->name;
-            $rec['birthdate'] = $person->birthdate;
-            $rec['timezone'] = $person->timezone;
-
-            $birthdate = new \DateTime($person->birthdate, new \DateTimeZone($person->timezone));
-            $nextBirthday = $this->nextBirthdate($birthdate);
-            $interval = $this->currentDate->diff($nextBirthday);
-            $rec['interval'] = [
-                'y' => intval($interval->y),
-                'm' => intval($interval->m),
-                'd' => intval($interval->d),
-                'h' => intval($interval->h),
-                'i' => intval($interval->i),
-                's' => intval($interval->s),
-                '_comment' => sprintf("f: %f", $interval->f)
-            ];
-            $rec['isBirthday'] = $this->isBirthdate($birthdate);
-            $rec['message'] = $this->createMessage($rec, $birthdate);
-            $records[] = $rec;
+            $records[] = $this->birthdateRecord($person);
         }
         return response()->json($records);
     }

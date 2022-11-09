@@ -3,6 +3,7 @@
 use Laravel\Lumen\Testing\DatabaseMigrations;
 use Laravel\Lumen\Testing\DatabaseTransactions;
 use App\Http\Controllers\PersonController;
+use App\Models\Person;
 
 class PersonTest extends TestCase
 {
@@ -52,7 +53,7 @@ class PersonTest extends TestCase
     }
 
     /*
-    * test controller class functions
+    * test controller class isBirthdate function
     *
     * @return void
     */
@@ -73,6 +74,11 @@ class PersonTest extends TestCase
 
     }
 
+    /*
+    * test controller class nextBirthdate function
+    *
+    * @return void
+    */
     public function testNextBirthdate(): void
     {
         // Test constructor currentDate setup
@@ -99,6 +105,11 @@ class PersonTest extends TestCase
         // Test createMessage()
     }
 
+    /*
+    * test controller class createMessage function
+    *
+    * @return void
+    */
     public function testCreateMessage(): void
     {
         // test birth date in the current day, show hours remaining
@@ -123,19 +134,19 @@ class PersonTest extends TestCase
         $message = $personCtrl1->createMessage($test_rec1, $birthdate1);
         $this->assertEquals($message, "Ashely B is 1 years old today (22 hours remaining in America/New_York).");
  
-         // test birth date in the current day, show hours remaining
+         // test birth date in few month
          $test_rec2 = [
             "name" => "John Williams",
             "birthdate" => "1950-09-09 03:31:00",
             "timezone" => "America/Los_Angeles",
             "interval" => [
                 "y" => 0,
-                "m" => 9,
-                "d" => 30,
-                "h" => 23,
-                "i" => 48,
-                "s" => 42,
-                "_comment" => "f: 0.840758"
+                "m" => 10,
+                "d" => 0,
+                "h" => 0,
+                "i" => 20,
+                "s" => 0,
+                "_comment" => "f: 0.000000"
             ],
             "isBirthday" => false,
         ];
@@ -143,7 +154,7 @@ class PersonTest extends TestCase
         $dateTime2 = new DateTime("2022-11-08 23:40:00", new DateTimeZone("America/Los_Angeles"));
         $personCtrl2 = new PersonController(['currentDate' => $dateTime2]);
         $message2 = $personCtrl2->createMessage($test_rec2, $birthdate2);
-        $this->assertEquals($message2, "John Williams is 73 years old in 9 months, 30 days in America/Los_Angeles.");
+        $this->assertEquals($message2, "John Williams is 73 years old in 10 months, 0 days in America/Los_Angeles.");
 
         // test birth date coming soon, within a day
         $test_rec3 = [
@@ -166,5 +177,64 @@ class PersonTest extends TestCase
         $personCtrl3 = new PersonController(['currentDate' => $dateTime3]);
         $message3 = $personCtrl3->createMessage($test_rec3, $birthdate3);
         $this->assertEquals($message3, "Ryan is 23 years old in 23 hours 35 minutes.");
+    }
+
+    /*
+    * test controller class birthdateRecord generator function
+    *
+    * @return void
+    */
+    public function testBirthdateRecord(): void {
+
+        // test birth date in the current day, show hours remaining
+        $test_rec1 = [
+            "name" => "Ashely B",
+            "birthdate" => "2021-11-09 03:31:00",
+            "timezone" => "America/New_York",
+        ];
+        $dateTime1 = new DateTime("2022-11-08 23:40:00", new DateTimeZone("America/Los_Angeles"));
+        $personCtrl1 = new PersonController(['currentDate' => $dateTime1]);
+        $person1 = new Person();
+        $person1->name = $test_rec1['name'];
+        $person1->birthdate = $test_rec1['birthdate'];
+        $person1->timezone = $test_rec1['timezone'];
+        $personRecord1 = $personCtrl1->birthdateRecord($person1);
+        $this->assertEquals($personRecord1['message'], "Ashely B is 1 years old today (22 hours remaining in America/New_York).");
+        $this->assertEquals($personRecord1['isBirthday'], true);
+
+        // test birth date in few month
+        $test_rec2 = [
+            "name" => "John Williams",
+            "birthdate" => "1950-09-09 03:31:00",
+            "timezone" => "America/Los_Angeles",
+        ];
+        $dateTime2 = new DateTime("2022-11-08 23:40:00", new DateTimeZone("America/Los_Angeles"));
+        $personCtrl2 = new PersonController(['currentDate' => $dateTime2]);
+        $person2 = new Person();
+        $person2->name = $test_rec2['name'];
+        $person2->birthdate = $test_rec2['birthdate'];
+        $person2->timezone = $test_rec2['timezone'];
+        $personRecord2 = $personCtrl2->birthdateRecord($person2);
+        $this->assertEquals($personRecord2['message'], "John Williams is 73 years old in 10 months, 0 days in America/Los_Angeles.");
+        $this->assertEquals($personRecord2['isBirthday'], false);
+
+        // test birth date coming soon, within a day
+        $test_rec3 = [
+            "name" => "Ryan",
+            "birthdate" => "2000-11-10 03:31:00",
+            "timezone" => "America/Los_Angeles",
+        ];
+        $birthdate3 = new DateTime($test_rec3['birthdate'], new DateTimeZone($test_rec3['timezone']));
+        $dateTime3 = new DateTime("2022-11-09 00:25:00", new DateTimeZone("America/Los_Angeles"));
+        $personCtrl3 = new PersonController(['currentDate' => $dateTime3]);
+        $person3 = new Person();
+        $person3->name = $test_rec3['name'];
+        $person3->birthdate = $test_rec3['birthdate'];
+        $person3->timezone = $test_rec3['timezone'];
+        $personRecord3 = $personCtrl3->birthdateRecord($person3);
+        $this->assertEquals($personRecord3['message'], "Ryan is 23 years old in 23 hours 35 minutes.");
+        $this->assertEquals($personRecord3['isBirthday'], false);
+
+
     }
 }
