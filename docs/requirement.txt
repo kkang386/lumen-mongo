@@ -1,0 +1,116 @@
+## Problem statement
+
+
+Design and implement a program that keeps track of people's birthdays
+
+and warns about upcoming birthdays. If their birthday is today,
+
+the program should warn about the number of hours remaining until the
+
+end of a person's birthday, otherwise it should warn about the number
+
+of months/days left until their next birthday.
+
+
+The program should be implemented as a JSON REST service in Lumen,
+
+using MongoDB as database, storing the following minimum information
+
+about a person:
+
+
+- Name
+
+- Birth date (validated on input)
+
+- Time zone (their local, validated on input)
+
+
+At least two HTTP endpoints should be implemented:
+
+
+- Create a new Person and persist it in the database
+
+- List all Persons in the database with their upcoming birthdays.
+
+
+Include a human readable message with details about upcoming birthday, such as:
+
+
+    "Ken Thompson is 78 years old in 10 months, 29 days in America/New_York"
+
+
+or
+
+
+    "Ken Thompson is 78 years old today (7 hours remaining in America/New_York)"
+
+
+### Notes on design
+
+
+The engine should support calculating intervals from the current time,
+
+or from a user-specified time. The latter should be used in unit
+
+tests that should also be provided (using PHPUnit).
+
+
+#### Features outside of the project scope (don't need to be implemented)
+
+
+- It is not necessary to have endpoints for deleting and modifying
+
+Person records
+
+- It is not necessary to enforce uniqueness of Person records
+
+- It is not necessary to support localization (language/time format/etc.)
+
+- It is not necessary to seed the database
+
+
+#### Example query and response
+
+
+    $ curl -s http://localhost:8000/person/ | jq .
+
+    {
+
+      "data": [
+
+        {
+
+          "name": "Ken Thompson",
+
+          "birthdate": "1943-02-04",
+
+          "timezone": "America/New_York",
+
+          "isBirthday": false,
+
+          "interval": {
+
+            "y": 0,
+
+            "m": 10,
+
+            "d": 29,
+
+            "h": 10,
+
+            "i": 49,
+
+            "s": 47,
+
+            "_comment": "possibly other fields..."
+
+          },
+
+          "message": "Ken Thompson is 78 years old in 10 months, 29 days in America/New_York"
+
+        },
+
+    # ...
+
+
