@@ -10,19 +10,41 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 use Log;
 
+/*
+* Controller class for handling person's birthdate requests.
+*/
 class PersonController extends Controller
 {   
     public \DateTime $currentDate;
 
+    /*
+     * Constructor function 
+     * takes a optional current date parameter if provided  
+     * set up the current date use the current time
+     * 
+     * @param {DateTime} $args['currentDate']: current date
+     */
     public function __construct($args = []) {
         $this->currentDate = isset($args['currentDate'])? $args['currentDate'] : new \DateTime();
     }
 
+    /*
+    * function isBirthdate checkes if the date is birthday today
+    * @param {DateTime} birthdate: a person's birthdate
+    * @return {bool}: if it is currently a birth day
+    */
     public function isBirthdate(\DateTime $birthdate): bool {
         $this->currentDate->setTimezone($birthdate->getTimezone());
         return ($birthdate->format('m-d') == $this->currentDate->format('m-d'));
     }
     
+    /*
+    * function nextBirthdate
+    * compute the next birth day based on the provided birth date and current time(setup by the controller)
+    * @param {DateTime} birthdate: a person's birth date
+    * @return {DateTime} : when is the nearest next time should the person has a birth day.
+    *   if it is today, return today's date.
+    */
     public function nextBirthdate(\DateTime $birthdate): \DateTime {
         $this->currentDate->setTimezone($birthdate->getTimezone());
         $todayMonth = intval($this->currentDate->format("m"));
@@ -53,6 +75,20 @@ class PersonController extends Controller
         return $newBirthDay;
     }
     
+    /*
+    * function createMessage
+    * @param {Array} rec: a person's record containing 
+    *       [
+    *       "name" {string},
+    *       "birthdate" {string},
+    *       "timezone" {string},
+    *       "interval" {Array of time interval},
+    *       "isBirthday" {bool},
+    *       ];
+    * @param {DateTime} birthdate: a person's birthdate in DateTime 
+    * @return {string} : a message indicate persona' age and time remaining for the 
+    *   nearest birthday coming in future or taking place today.
+    */
     public function createMessage(Array $rec, \DateTime $birthdate): String {
         $this->currentDate->setTimezone($birthdate->getTimezone());
         $age = intval($this->currentDate->format('Y')) - intval($birthdate->format('Y'));
@@ -75,6 +111,12 @@ class PersonController extends Controller
         return $message;
     }
 
+    /*
+    * function birthdateRecord
+    * @param {Person} $person: a person'a full birthdate record from the ORM model
+    * @return {Array}: a person's full information including a message indicate persona' 
+    * age and time remaining for the nearest birthday coming in future or taking place today.
+    */
     public function birthdateRecord(Person $person): Array {
         $rec = [];
         $rec['name'] = $person->name;
@@ -98,6 +140,13 @@ class PersonController extends Controller
         return $rec;
     }
 
+    /*
+    * function show()
+    * HTTP GET request handler
+    * @param {}
+    * @return {JsonResponse}: return all upcoming birthday records in 
+    * the system in JSON
+    */
     public function show(): JsonResponse {
         $people = Person::query()->get();
 
@@ -108,6 +157,16 @@ class PersonController extends Controller
         return response()->json($records);
     }
 
+    /*
+    * function store() 
+    * HTTP POST request handler
+    * Validate input, save the good records to db.
+    *
+    * @param {Request} request: HTTP request object received
+    * @return {JsonResponse} : status 201 with JSON object on success,
+    *   or with status 401 on any errors, with error message
+    *   indicating the reason of the rejection. 
+    */
     public function store(Request $request): JsonResponse {
         
         $validator = Validator::make($request->all(),
