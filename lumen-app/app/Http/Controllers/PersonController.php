@@ -101,8 +101,8 @@ class PersonController extends Controller
             if ($rec['interval']['y'] == 0 && 
                 $rec['interval']['m'] == 0 &&
                 $rec['interval']['d'] == 0) {
-                    $message = sprintf("%s is %d years old in %d hours %d minutes.",
-                    $rec['name'], $age + 1, $rec['interval']['h'], $rec['interval']['i'], $rec['timezone'] );
+                    $message = sprintf("%s is %d years old in %d hours %d minutes in %s.",
+                    $rec['name'], $age, $rec['interval']['h'], $rec['interval']['i'], $rec['timezone'] );
             } else {
                 $message = sprintf("%s is %d years old in %d months, %d days in %s.",
                     $rec['name'], $age + 1, $rec['interval']['m'], $rec['interval']['d'], $rec['timezone'] );
