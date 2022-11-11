@@ -8,6 +8,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        // custom input validation methods
         Validator::extend('name_string', function($attribute, $value, $parameters) {
             if(preg_match('/^[A-Z][ a-zA-Z]+$/', $value)){
                 return true;

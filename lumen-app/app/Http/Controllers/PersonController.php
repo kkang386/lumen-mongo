@@ -169,6 +169,10 @@ class PersonController extends Controller
     */
     public function store(Request $request): JsonResponse {
         
+        // Setup the input validation rules.
+        // unique challenge: if I want to validate the birthday is not in future,
+        // there isn't a way to combine two inputs (birthdate and timezone) input into
+        // one validation rule. Something to think about how to do..
         $validator = Validator::make($request->all(),
             [
                 'name' => 'required|max:255|name_string',
@@ -188,8 +192,6 @@ class PersonController extends Controller
 
         $person = new Person();
         $person->name = $request->name;
-        // $date = new \DateTime($request->birthdate, new \DateTimeZone("UTC") );
-        // $person->birthdate = new \MongoDB\BSON\UTCDateTime($date->getTimestamp()*1000);
         $person->birthdate = $request->birthdate;
         $person->timezone = $request->timezone;
 
