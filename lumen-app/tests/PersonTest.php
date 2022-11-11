@@ -214,18 +214,27 @@ class PersonTest extends TestCase
         // test birth date coming soon, within a day
         $test_rec3 = [
             "name" => "Ryan",
-            "birthdate" => "2000-11-10 03:31:00",
+            "birthdate" => "2000-11-10 03:20:00",
             "timezone" => "America/Los_Angeles",
         ];
-        $dateTime3 = new DateTime("2022-11-09 00:25:00", new DateTimeZone("America/Los_Angeles"));
+        $dateTime3 = new DateTime("2022-11-09 00:20:00", new DateTimeZone("America/Los_Angeles"));
         $personCtrl3 = new PersonController(['currentDate' => $dateTime3]);
         $person3 = new Person();
         $person3->name = $test_rec3['name'];
         $person3->birthdate = $test_rec3['birthdate'];
         $person3->timezone = $test_rec3['timezone'];
         $personRecord3 = $personCtrl3->birthdateRecord($person3);
-
-        $this->assertEquals("Ryan is 22 years old in 23 hours 35 minutes in America/Los_Angeles.", $personRecord3['message']);
+        $this->assertEquals("Ryan is 22 years old in 23 hours 40 minutes in America/Los_Angeles.", $personRecord3['message']);
         $this->assertEquals(false, $personRecord3['isBirthday']);
+
+        // test the intervals
+        $this->assertEquals(0, $personRecord3['interval']['y']);
+        $this->assertEquals(0, $personRecord3['interval']['m']);
+        $this->assertEquals(0, $personRecord3['interval']['d']);
+        $this->assertEquals(23, $personRecord3['interval']['h']);
+        $this->assertEquals(40, $personRecord3['interval']['i']);
+        $this->assertEquals(0, $personRecord3['interval']['s']);
+        $this->assertEquals('f: 0.000000', $personRecord3['interval']['_comment']);
+        
     }
 }
