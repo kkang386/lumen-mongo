@@ -42,8 +42,6 @@ services:
       - 8000:8000
     volumes:
       - ./lumen-app/:/var/www/html/
-      - $PWD/system/php.ini:/usr/local/etc/php/php.ini
-      #- $PWD/logs:/var/log/apache2
       - /var/www/html/vendor/
     restart: always
 
