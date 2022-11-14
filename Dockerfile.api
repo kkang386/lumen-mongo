@@ -10,7 +10,7 @@ COPY ./lumen-app/tests /var/www/html/tests
 #RUN rm -rf /var/cache/apk/*
 RUN apk update \
     && apk add --no-cache libmcrypt \
-    php7-pecl-mcrypt \
+    php8-pecl-mcrypt \
     libcurl \
     curl \
     pkgconf-dev \
