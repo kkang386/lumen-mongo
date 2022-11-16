@@ -36,10 +36,11 @@ class PersonTest extends TestCase
 
         $this->post('/person', ['name' => 'Sally1234',
                 'birthdate' => 'xyz19901120 13:30:00',
-                'timezone' => 'America/New_York'
+                'timezone' => 'xyzAmerica/New_York'
             ])->seeJsonEquals([
                 'birthdate' => ["Invalid birth date format. Please use this format: 'YYYY-MM-DD HH:MM:SS'"],
                 'name' => ["Name may only contain letters and spaces."],
+                'timezone' => ["Invalid timezone."]
             ])->seeStatusCode(400);
 
         $this->get('/person')->seeStatusCode(200);

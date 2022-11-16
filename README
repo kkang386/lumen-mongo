@@ -2,15 +2,20 @@
 Initial setup:
     docker compose up --build
 
-Login to docker
+Login to the docker container
     docker exec -it lm-api /bin/sh
 
 Setup dev mongo db 
     php artisan migrate
 
 Run unittests
-  Login to docker and run this command
+  Login to the docker container and run this command
     ./vendor/bin/phpunit
+
+Run unittest coverage report
+  Login to the docker container and run these two commands:
+    export XDEBUG_MODE=coverage
+    ./vendor/bin/phpunit --coverage-html tests-reports/
 
 Note:
 

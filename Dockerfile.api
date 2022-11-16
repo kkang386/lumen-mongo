@@ -19,10 +19,11 @@ RUN apk update \
     autoconf \
     make \
     build-base \
-    openssl-dev
+    openssl-dev \
+    php8-pecl-xdebug
 
-RUN pecl install mongodb
-RUN docker-php-ext-enable mongodb
+RUN pecl install mongodb xdebug
+RUN docker-php-ext-enable mongodb xdebug
 
 RUN composer install
 RUN composer require jenssegers/mongodb:3.8.0 --with-all-dependencies
