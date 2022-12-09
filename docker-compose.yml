@@ -34,15 +34,28 @@ services:
     container_name: lm-api 
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: ./container/Dockerfile.api
+      args:
+          # Available [trace|debug|profile]. Use Comma separated available values for multiple mode
+          # Use "off" to disable xdebug
+          #- XDEBUG_MODES=debug,trace
+          - XDEBUG_MODES=debug,trace
+          # Set the following values to overwrite the existing settings.
+          # Uncomment the following line and change value.
+          - REMOTE_HOST=host.docker.internal # Host machine IP
+          - REMOTE_PORT=9000 # IDE/Editor's listener port
+          - IDE_KEY=docker # IDE's filter/listener key      
     networks:
       test_net:
         ipv4_address: 192.168.4.10
     ports:
       - 8000:8000
+      - 9003:9003
     volumes:
       - ./lumen-app/:/var/www/html/
       - /var/www/html/vendor/
+      # Xdebug Log files will be written in this directory
+      - ./container/logs/xdebug:/tmp/xdebug      
     restart: always
 
 networks:

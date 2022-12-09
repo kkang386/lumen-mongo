@@ -25,9 +25,23 @@ RUN apk update \
 RUN pecl install mongodb xdebug
 RUN docker-php-ext-enable mongodb xdebug
 
+COPY ./container/xdebug /var/www/xdebug
+ARG XDEBUG_MODES
+ARG REMOTE_HOST="host.docker.internal"
+ARG REMOTE_PORT=9000
+ARG IDE_KEY="docker"
+
+ENV MODES=$XDEBUG_MODES
+ENV CLIENT_HOST=$REMOTE_HOST
+ENV CLIENT_PORT=$REMOTE_PORT
+ENV IDEKEY=$IDE_KEY
+RUN chmod +x /var/www/xdebug/setup.sh
+
 RUN composer install
 RUN composer require jenssegers/mongodb:3.8.0 --with-all-dependencies
 RUN composer require flipbox/lumen-generator
+
+RUN /var/www/xdebug/setup.sh
 
 ENTRYPOINT ["php"]
 CMD ["-S", "0.0.0.0:8000", "-t", "/var/www/html/public/"]
