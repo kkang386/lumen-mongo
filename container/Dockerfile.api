@@ -20,6 +20,7 @@ RUN apk update \
     make \
     build-base \
     openssl-dev \
+    linux-headers \
     php8-pecl-xdebug
 
 RUN pecl install mongodb xdebug
